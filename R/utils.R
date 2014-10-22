@@ -75,12 +75,11 @@ setupPackage <- function(object, pkgName, destDir, dbFileName, unlink, quiet){
 }              
 
 connectDb <- function(dbfile) {
-    require("RSQLite")
     db <- dbConnect(SQLite(), dbname=dbfile, cache_size=6400, synchronous=0)
     sql <- ('
             pragma page_size = 8192;                
             ')
-    sqliteQuickSQL(db, sql)
+    dbGetQuery(db, sql)
     db
 }
 
@@ -107,7 +106,7 @@ createChrDict <- function(x){
     suffixes <- sapply(dataSplit[-idx], function(x) paste(x[-1], collapse="_"))
     suffixes <- sort(unique(suffixes))
     out <- list()
-    out[[1]] <- basic
+    out[[1]] <- sort(basic)
     for (i in 1:length(suffixes))
       out[[i+1]] <- paste(basic, suffixes[i], sep="_")
     out <- unlist(out)

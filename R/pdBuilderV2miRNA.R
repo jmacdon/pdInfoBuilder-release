@@ -9,14 +9,15 @@ miRNAFeatureSetSchema <- list(col2type=c(
 
 
 getTypeSchema <- function()
-    data.frame(type=as.integer(1:11),
-               type_id=c("main",
-               "control->affx", "control->chip",
-               "control->bgp->antigenomic",
-               "control->bgp->genomic", "normgene->exon",
-               "normgene->intron",
-               "rescue->FLmRNA->unmapped", "control->affx->bac_spike",
-               "oligo_spike_in", "r1_bac_spike_at"),
+    data.frame(type=as.integer(1:14),
+               type_id=c("main", "control->affx", "control->chip",
+                   "control->bgp->antigenomic",
+                   "control->bgp->genomic", "normgene->exon",
+                   "normgene->intron", "rescue->FLmRNA->unmapped",
+                   "control->affx->bac_spike", "oligo_spike_in",
+                   "r1_bac_spike_at", "control->affx->polya_spike",
+                   "control->affx->ercc",
+                   "control->affx->ercc->step"),
                stringsAsFactors=FALSE)
 
 getLevelSchema <- function()
@@ -94,12 +95,15 @@ setMethod("makePdInfoPackage", "AffyMiRNAPDInfoPkgSeed",
                           "pmfeature",
                           genePmFeatureSchema[["col2type"]],
                           genePmFeatureSchema[["col2key"]])
-
-            dbCreateTable(conn,
-                          "mmfeature",
-                          genePmFeatureSchema[["col2type"]],
-                          genePmFeatureSchema[["col2key"]])
+            
+            containsMm <- nrow(parsedData[["mmFeatures"]]) > 0
+            if (containsMm)
+                dbCreateTable(conn,
+                              "mmfeature",
+                              genePmFeatureSchema[["col2type"]],
+                              genePmFeatureSchema[["col2key"]])
             ## end creating tables
+            
 
             ## Inserting data in new tables
             dbInsertDataFrame(conn, "type_dict", parsedData[["type_dict"]],
@@ -109,14 +113,21 @@ setMethod("makePdInfoPackage", "AffyMiRNAPDInfoPkgSeed",
                               miRNAFeatureSetSchema[["col2type"]], !quiet)
             dbInsertDataFrame(conn, "pmfeature", parsedData[["pmFeatures"]],
                               genePmFeatureSchema[["col2type"]], !quiet)
-            dbInsertDataFrame(conn, "mmfeature", parsedData[["mmFeatures"]],
-                              genePmFeatureSchema[["col2type"]], !quiet)
+            if (containsMm)
+                dbInsertDataFrame(conn, "mmfeature", parsedData[["mmFeatures"]],
+                                  genePmFeatureSchema[["col2type"]], !quiet)
             ## end inserting
 
             dbCreateTableInfo(conn, !quiet)
 
             ## Create indices
-            dbCreateIndicesPm(conn, !quiet)
+            ## dbCreateIndicesPm(conn, !quiet)
+            dbCreateIndex(conn, "idx_pmfsetid", "pmfeature", "fsetid", FALSE, verbose=!quiet)
+            dbCreateIndex(conn, "idx_pmfid", "pmfeature", "fid", FALSE, verbose=!quiet)
+            if (containsMm) {
+                dbCreateIndex(conn, "idx_mmfsetid", "pmfeature", "fsetid", FALSE, verbose=!quiet)
+                dbCreateIndex(conn, "idx_mmfid", "pmfeature", "fid", FALSE, verbose=!quiet)
+            }
 ##            dbCreateIndicesMm(conn, !quiet)
             dbCreateIndicesFs(conn, !quiet)
 

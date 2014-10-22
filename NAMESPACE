@@ -1,10 +1,33 @@
 useDynLib("pdInfoBuilder")
 
-import("methods")
-import("Biobase")
+importClassesFrom(Biobase, ScalarCharacter)
 
-importFrom("Biostrings", "DNAStringSet")
-importFrom("IRanges", "DataFrame")
+importMethodsFrom(DBI, dbDriver)
+
+importMethodsFrom(methods, initialize)
+
+importMethodsFrom(RSQLite, dbBeginTransaction, dbClearResult, dbCommit,
+                  dbConnect, dbDisconnect, dbGetPreparedQuery,
+                  dbGetQuery, dbListTables, dbSendPreparedQuery,
+                  dbWriteTable)
+
+importFrom(affxparser, readBpmap, readCdf, readCdfHeader,
+           readCdfUnitNames, readCelHeader, readClf, readClfHeader,
+           readPgf, readPgfHeader)
+
+importFrom(Biobase, createPackage)
+
+importFrom(Biostrings, DNAStringSet)
+
+importFrom(methods, callNextMethod, new, slot)
+
+importFrom(oligo, cleanPlatformName)
+
+importFrom(RSQLite, SQLite)
+
+importFrom(S4Vectors, DataFrame)
+
+importFrom(utils, installed.packages, read.csv, read.delim, read.table)
 
 exportClasses(
               "AffyExpressionPDInfoPkgSeed",
